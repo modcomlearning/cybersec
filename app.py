@@ -3,8 +3,6 @@ from flask import request
 import pymysql
 app = Flask(__name__)
 
-
-
 import hashlib, binascii, os
 
 # This function receives a password as a parameter
@@ -46,7 +44,7 @@ def login():
 
         # insert the records into the users tables
         cursor = conn.cursor()
-        cursor.execute("select * from users where email = %s and status = %", (email,))
+        cursor.execute("select * from users where email = %s", (email))
 
         if cursor.rowcount == 1:
             # take me to a different route and create a session
@@ -58,6 +56,7 @@ def login():
             if status ==True:
                 return render_template('login.html', msg="Login Successful")
             else:
+                # program a code to check record failures
                 return render_template('login.html', msg="Login Failed")
 
         else:
@@ -67,7 +66,7 @@ def login():
         return render_template('login.html')
 
 
-
+# python, pycharm, XAMPP
 
 @app.route('/signup', methods=['POST', 'GET'])
 def signup():
