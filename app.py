@@ -1,10 +1,16 @@
+from datetime import timedelta
+
 from flask import Flask, render_template, session
 from flask import request
 import pymysql
+
+
 app = Flask(__name__)
+app.secret_key = "#$$sol15indra^nsPP@Rrrshshsh$$%%%%^^^^"
+
+app.config['PERMANENT_SESSION_LIFETIME'] =  timedelta(seconds=10000)
 
 import hashlib, binascii, os
-
 # This function receives a password as a parameter
 # its hashes and salts using sha512 encoding
 def hash_password(password):
@@ -14,8 +20,6 @@ def hash_password(password):
                                 salt, 100000)
     pwdhash = binascii.hexlify(pwdhash)
     return (salt + pwdhash).decode('ascii')
-
-
 
 
 # this function checks if hashed password is the same as
@@ -51,10 +55,23 @@ def login():
             rows = cursor.fetchone()
             # get hashed password from db
             hashed_password = rows[1]
+
+
+
             # Provide the hashed password
             status = verify_password(hashed_password, password)
             if status ==True:
-                return render_template('login.html', msg="Login Successful")
+                # do session here
+
+                session['key']  = email
+                # here we get the role of logged in user
+                role = rows[3]
+                # we store the role in a session
+                session['role'] = role
+                session.permanent = True
+                # session.modified = True
+                from flask import redirect
+                return redirect('/home')
             else:
                 # program a code to check record failures
                 return render_template('login.html', msg="Login Failed")
@@ -67,7 +84,6 @@ def login():
 
 
 # python, pycharm, XAMPP
-
 @app.route('/signup', methods=['POST', 'GET'])
 def signup():
     if request.method == "POST":
@@ -104,6 +120,35 @@ def signup():
 
     else:
         return render_template('signup.html')
+
+
+# Restrict parts that should need user to login
+from flask import redirect
+@app.route('/home')
+def home():
+    if 'key' in session:
+        # proceed with login here
+        role = session['role']
+        # if role != 'admin' :
+        #     return redirect('/login')
+        if role =='admin' or role =='user':
+            return render_template('home.html')
+        # Roles
+        else:
+            return redirect('/login')
+
+    else:
+        # Dont proceed
+        return redirect('/login')
+
+
+
+@app.route('/logout')
+def logout():
+    session.pop('key',None)
+    session.pop('role', None)
+    return redirect('/login')
+
 
 
 if __name__ == '__main__':

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+
+{{session['username']}}
+<a href="/logout">Logout</a>
+  <h1>Welcome to My Good Home Page</h1>
+<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Esse non quam quo similique. Asperiores assumenda dicta enim id, illo ipsam iusto odit soluta tenetur unde! Delectus laudantium maxime optio rerum.</p>
+
+{% if session['role'] == 'admin'%}
+       <a href="/delete">Delete</a>
+{% endif %}
+
+
+</body>
+</html>
