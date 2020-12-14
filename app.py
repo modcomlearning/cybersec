@@ -1,14 +1,22 @@
 from datetime import timedelta
+from urllib import response
 
 from flask import Flask, render_template, session
 from flask import request
 import pymysql
 
+#response.headers['X-Frame-Options'] = 'DENY'
 
 app = Flask(__name__)
 app.secret_key = "#$$sol15indra^nsPP@Rrrshshsh$$%%%%^^^^"
 
 app.config['PERMANENT_SESSION_LIFETIME'] =  timedelta(seconds=10000)
+
+
+# Implement csrf token
+from flask_wtf.csrf import  CSRFProtect
+csrf = CSRFProtect(app)
+# above code will generate a random token for each visitor
 
 import hashlib, binascii, os
 # This function receives a password as a parameter
@@ -140,7 +148,6 @@ def home():
     else:
         # Dont proceed
         return redirect('/login')
-
 
 
 @app.route('/logout')

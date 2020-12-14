@@ -21,6 +21,7 @@
         <div class="col-md-4">
             <h4>Login</h4>
             <form action="/login" method="post">
+                <input type="hidden" name="csrf_token" value = "{{ csrf_token() }}">
                 <input type="email" name="email" placeholder="Your Email" class="form-control">
                 <br>
                 <input type="password" name="password" placeholder="Your Password" class="form-control">
