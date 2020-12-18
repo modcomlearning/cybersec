@@ -5,6 +5,19 @@ from flask import Flask, render_template, session
 from flask import request
 import pymysql
 
+# importing module
+import logging
+
+# Create and configure logger
+logging.basicConfig(filename="newfile.log",
+                    format='%(asctime)s %(message)s',
+                    filemode='w')
+# Creating an object
+logger = logging.getLogger()
+
+# Setting the threshold of logger to DEBUG
+logger.setLevel(logging.DEBUG)
+
 #response.headers['X-Frame-Options'] = 'DENY'
 
 app = Flask(__name__)
@@ -13,9 +26,9 @@ app.secret_key = "#$$sol15indra^nsPP@Rrrshshsh$$%%%%^^^^"
 app.config['PERMANENT_SESSION_LIFETIME'] =  timedelta(seconds=10000)
 
 
-# Implement csrf token
-from flask_wtf.csrf import  CSRFProtect
-csrf = CSRFProtect(app)
+# # Implement csrf token
+# from flask_wtf.csrf import  CSRFProtect
+# csrf = CSRFProtect(app)
 # above code will generate a random token for each visitor
 
 import hashlib, binascii, os
@@ -59,12 +72,11 @@ def login():
         cursor.execute("select * from users where email = %s", (email))
 
         if cursor.rowcount == 1:
+
             # take me to a different route and create a session
             rows = cursor.fetchone()
             # get hashed password from db
             hashed_password = rows[1]
-
-
 
             # Provide the hashed password
             status = verify_password(hashed_password, password)
@@ -72,6 +84,7 @@ def login():
                 # do session here
 
                 session['key']  = email
+                logger.info("Logged in ", email)
                 # here we get the role of logged in user
                 role = rows[3]
                 # we store the role in a session
@@ -82,9 +95,11 @@ def login():
                 return redirect('/home')
             else:
                 # program a code to check record failures
+                logger.info("Login failed")
                 return render_template('login.html', msg="Login Failed")
 
         else:
+            logger.info("The email does not exist")
             return render_template('login.html', msg="The email does not exist")
 
     else:
@@ -98,6 +113,7 @@ def signup():
 
         email = request.form['email']
         password = request.form['password']
+        # assuming there were more here like phone, credit card,
 
         import re
         # define a function to check password strength
@@ -121,10 +137,17 @@ def signup():
             conn = pymysql.connect("localhost", "root", "", "cs_db")
 
             # insert email, password records into the users tables
-            cursor = conn.cursor()
-            cursor.execute("insert into users(email,password) values (%s,%s)", (email, hash_password(password)))
-            conn.commit()
-            return render_template('signup.html', msg="Record Saved Succesfully")
+            try:
+                cursor = conn.cursor()
+                cursor.execute("insert into users(email,password) values (%s,%s)", (email, hash_password(password)))
+                logger.info("Saved successful")
+                conn.commit()
+                return render_template('signup.html', msg="Record Saved Succesfully")
+            except:
+                logger.critical("Failed to save")
+                conn.rollback()
+                return render_template('signup.html', msg="Record not Saved Succesfully")
+
 
     else:
         return render_template('signup.html')
